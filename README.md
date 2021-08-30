@@ -2,7 +2,7 @@ Repository for learning python to use with applications in the Animation/VFX ind
 
 Each application has a readme file explaining the basics of how to get started with the python API for that application. The DCC (Digital Content Creator) applications come with a challenge so you can put your python knowledge to the test, and a solution file showing one way to complete it.
 
-- [Maya](./maya/maya.md)
-- [Nuke](./nuke/nuke.md)
-- [Shotgun](./shotgun/shotgun.md)
+- [Maya](./maya/)
+- [Nuke](./nuke/)
+- [Shotgun](./shotgun/)
 
