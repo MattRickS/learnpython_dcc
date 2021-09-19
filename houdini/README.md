@@ -37,6 +37,8 @@ See the [example script](./example.py) for setting up a scene with python, inclu
 [Node](https://www.sidefx.com/docs/houdini/hom/hou/Node.html)  
 [Excellent Learning Resource](https://www.deborahrfowler.com/PythonResources/PythonInHoudini.html)  
 
+Some examples of using methods are below. Note that creating a node is done from the parent node, and there are many ways to access a node.
+
 ```python
 import hou
 
@@ -46,4 +48,48 @@ n = hou.node('obj')
 geo = n.createNode('geo', node_name='mygeo')
 # Can also access the new node by using it's full path name.
 geo = hou.node('obj/mygeo')
+
+# Create a sphere, read it's X radius, and set it's X radius
+sphere = geo.createNode('sphere')
+radius_x = sphere.parm('radx').eval()
+sphere.parm('radx').set(radius_x + 1)
+
+# Create a color node and connect it to the sphere
+color = sphere.parent().createNode('color')
+color.setInput(0, sphere)
+
+# Handy utility for auto-positioning a node in the graph
+color.moveToGoodPosition()
 ```
+
+It's also possible to display UI messages with python, eg
+```python
+# Check the documentation for all options: https://www.sidefx.com/docs/houdini/hom/hou/ui.html
+hou.ui.displayMessage("Hello, this is a message from python in Houdini!")
+```
+but be careful of using this. UI needs user interaction, meaning anyone calling a function that has this in it will be blocked until they press a button. This could be annoying if the function was called in a loop and popped up many times. It could also crash the program if someone tried to call the function from a command line only session of Houdini. Only use UI messages where you know the UI will be available, such as in a shelf tool. Try and split up your code into functions so that your logic can be done in one function, and a separate function handles the UI, for example
+
+```python
+def do_the_thing(node):
+    # Does something to a node, no UI logic in here
+
+def shelf_tool():
+    # Get the node from user selection, show UI warning if incorrect, and only
+    # call the function if it's correct
+    selected_nodes = hou.selectedNodes()
+    if len(selected_nodes) != 1:
+        hou.ui.displayMessage("You must select one node!", severity=hou.severityType.Warning)
+        return
+    
+    do_the_thing(selected_nodes[0])
+```
+
+## Shelf Tools
+Shelf tools are useful for quick access to common operations, they're quick to setup, and easy to transfer to other people! You can create a new shelf with the "+" icon beside the existing shelf names and selecting "New Shelf ...". On any shelf, you can right click empty space and select "New Tool ...", or right click and existing tool and choose "Edit Tool ...". There are various options for name, label, keywords, etc... but the script tab is where you can write your code. Also take note of where the ".shelf" file is being saved to in case you want to distribute it to other people.
+
+When writing code for a shelf tool you have two choices.
+1. Write the code in a python file and the shelf tool just imports and calls a function. This is easiest for code management, as you can have all your scripts in one place, but if you want to distribute your ".shelf" file you'll have to give them the python script as well.
+2. Write the code directly in the tool. This makes the ".shelf" file portable as it has no external dependencies.
+
+The best of both worlds is if you have a studio defined location for shared scripts and shelf tools. In this case, adding it there means everyone gets it and you only have to update one place for everyone to get the same changes. If this is a setup your studio supports, just make sure you test your changes with a local copy first and only copy a working version into the shared directory, otherwise you risk everyone using a broken copy while you work on it.
+
